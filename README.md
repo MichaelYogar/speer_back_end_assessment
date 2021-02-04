@@ -7,7 +7,7 @@
 
 ## How to run
 
-In case set up takes too long, I've created a video demonstration:
+In case set up takes too long, I've created a video demonstration: [video](https://www.youtube.com/watch?v=NDR2G3UnSOI&ab_channel=MichaelYogar)
 
 1. Create a `.env` file inside the server folder of the project and add the following:
 
