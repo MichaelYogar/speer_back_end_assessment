@@ -1,13 +1,7 @@
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  Redirect,
-} from "react-router-dom";
+import { Link } from "react-router-dom";
 
-const NavBar = ({ isAuthenticated }) => {
+const NavBar = () => {
   return (
     <>
       <nav style={{ borderBottom: "1px solid black" }}>
