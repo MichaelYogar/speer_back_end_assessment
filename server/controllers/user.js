@@ -29,10 +29,9 @@ module.exports = {
     }
 
     // acutal price is the price of the stock * number of stocks to be purchased
-    price = price * numberOfStocks;
     // check if there is enough money to buy the stock
-    if (balance >= price) {
-      const newBalance = balance - price;
+    if (balance >= price * numberOfStocks) {
+      const newBalance = balance - price * numberOfStocks;
 
       // update user balance
       const updatedBalance = await db.query(
@@ -110,10 +109,9 @@ module.exports = {
     }
 
     // acutal price is the price of the stock * number of stocks to be purchased
-    price = price * numberOfStocks;
     // check if valid price is here
     if (price) {
-      const newBalance = balance + price;
+      const newBalance = balance + price * numberOfStocks;
 
       // update user balance
       const updatedBalance = await db.query(
