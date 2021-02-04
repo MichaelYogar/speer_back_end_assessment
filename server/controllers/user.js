@@ -4,14 +4,14 @@ const alpha = require("alphavantage")({ key: process.env.API_KEY });
 
 module.exports = {
   purchaseStock: async (req, res) => {
-    const { user_name, company, numberOfStocksToPurchase } = req.body;
-    console.log(user_name, company, numberOfStocksToPurchase);
+    const { user_email, company, numberOfStocksToPurchase } = req.body;
+    console.log(user_email, company, numberOfStocksToPurchase);
     let price;
 
     // get current balance
     const resultUserBalance = await db.query(
-      "SELECT balance FROM users WHERE user_name = $1",
-      [user_name]
+      "SELECT balance FROM users WHERE user_email = $1",
+      [user_email]
     );
 
     const balance = resultUserBalance.rows[0].balance;
@@ -36,28 +36,28 @@ module.exports = {
 
       // update user balance
       const updatedBalance = await db.query(
-        "UPDATE users SET balance = $1 WHERE user_name = $2",
-        [newBalance, user_name]
+        "UPDATE users SET balance = $1 WHERE user_email = $2",
+        [newBalance, user_email]
       );
 
       // update stock count for user
       const checkStock = await db.query(
-        "SELECT * FROM stock WHERE company = $1 AND user_name = $2 ",
-        [company, user_name]
+        "SELECT * FROM stock WHERE company = $1 AND user_email = $2 ",
+        [company, user_email]
       );
 
       // if there is check db if stock already exists
       if (checkStock.rows.length >= 1) {
         const updateStockNum = await db.query(
-          "UPDATE stock SET num_of_stocks = num_of_stocks + $1 WHERE user_name = $2 AND company = $3",
-          [numberOfStocksToPurchase, user_name, company]
+          "UPDATE stock SET num_of_stocks = num_of_stocks + $1 WHERE user_email = $2 AND company = $3",
+          [numberOfStocksToPurchase, user_email, company]
         );
         return res.send("succesful purchase - updated stock total");
       } else {
         // if it doesnt exist, insert the row
         let addedStock = await db.query(
-          "INSERT INTO stock (user_name, company, num_of_stocks) VALUES ($1, $2, $3) RETURNING *",
-          [user_name, company, numberOfStocksToPurchase]
+          "INSERT INTO stock (user_email, company, num_of_stocks) VALUES ($1, $2, $3) RETURNING *",
+          [user_email, company, numberOfStocksToPurchase]
         );
 
         return res.send("succesful purchase - inserted row");
@@ -70,14 +70,14 @@ module.exports = {
     }
   },
   sellStock: async (req, res) => {
-    const { user_name, company, numberOfStocksToPurchase } = req.body;
-    console.log(user_name, company, numberOfStocksToPurchase);
+    const { user_email, company, numberOfStocksToPurchase } = req.body;
+    console.log(user_email, company, numberOfStocksToPurchase);
     let price;
 
     // get current balance
     const resultUserBalance = await db.query(
-      "SELECT balance FROM users WHERE user_name = $1",
-      [user_name]
+      "SELECT balance FROM users WHERE user_email = $1",
+      [user_email]
     );
 
     const balance = resultUserBalance.rows[0].balance;
@@ -102,16 +102,16 @@ module.exports = {
 
       // update user balance
       const updatedBalance = await db.query(
-        "UPDATE users SET balance = $1 WHERE user_name = $2",
-        [newBalance, user_name]
+        "UPDATE users SET balance = $1 WHERE user_email = $2",
+        [newBalance, user_email]
       );
 
       // update stock count for user
 
       // get current number of stocks
       const checkStock = await db.query(
-        "SELECT * FROM stock WHERE company = $1 AND user_name = $2 ",
-        [company, user_name]
+        "SELECT * FROM stock WHERE company = $1 AND user_email = $2 ",
+        [company, user_email]
       );
 
       // if there is check db if stock already exists
@@ -119,8 +119,8 @@ module.exports = {
       if (checkStock.rows.length >= 1) {
         // subtract current number of stocks with the amount you want to sell
         const updateStockNum = await db.query(
-          "UPDATE stock SET num_of_stocks = num_of_stocks - $1 WHERE user_name = $2 AND company = $3",
-          [numberOfStocksToPurchase, user_name, company]
+          "UPDATE stock SET num_of_stocks = num_of_stocks - $1 WHERE user_email = $2 AND company = $3",
+          [numberOfStocksToPurchase, user_email, company]
         );
         return res.send("succesful sale - updated stock total");
       } else {
@@ -129,8 +129,8 @@ module.exports = {
           .send("Error: Tried to sell stocks that did not exist");
         // // if it doesnt exist, insert the row
         // let addedStock = await db.query(
-        //   "INSERT INTO stock (user_name, company, num_of_stocks) VALUES ($1, $2, $3) RETURNING *",
-        //   [user_name, company, numberOfStocksToPurchase]
+        //   "INSERT INTO stock (user_email, company, num_of_stocks) VALUES ($1, $2, $3) RETURNING *",
+        //   [user_email, company, numberOfStocksToPurchase]
         // );
 
         // return res.send("succesful purchase - inserted row");
@@ -143,18 +143,44 @@ module.exports = {
     }
   },
   deposit: async (req, res) => {
-    const { user_name, deposit } = req.body;
+    const { user_email, deposit } = req.body;
 
     const depositBalance = await db.query(
-      "UPDATE users SET balance = balance + $1 WHERE user_name = $2",
-      [deposit, user_name]
+      "UPDATE users SET balance = balance + $1 WHERE user_email = $2",
+      [deposit, user_email]
     );
 
     const newBalance = await db.query(
-      "SELECT balance FROM users WHERE user_name = $1",
-      [user_name]
+      "SELECT balance FROM users WHERE user_email = $1",
+      [user_email]
     );
 
     res.send(newBalance.rows[0]);
+  },
+  getUserInfo: async (req, res) => {
+    const { user_email } = req.body;
+    let arr = [];
+
+    try {
+      const balance = await db.query(
+        "SELECT balance FROM users WHERE user_email = $1",
+        [user_email]
+      );
+
+      arr.push(balance.rows[0]);
+
+      const stocks = await db.query(
+        "SELECT company, num_of_stocks FROM stock WHERE user_email = $1",
+        [user_email]
+      );
+
+      for (const row of stocks.rows) {
+        arr.push(row);
+      }
+
+      res.send(arr);
+    } catch (err) {
+      console.log(err);
+    }
   },
 };
