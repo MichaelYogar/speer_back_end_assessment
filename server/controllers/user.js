@@ -134,13 +134,6 @@ module.exports = {
         return res
           .status(400)
           .send("Error: Tried to sell stocks that did not exist");
-        // // if it doesnt exist, insert the row
-        // let addedStock = await db.query(
-        //   "INSERT INTO stock (user_email, company, num_of_stocks) VALUES ($1, $2, $3) RETURNING *",
-        //   [user_email, company, numberOfStocks]
-        // );
-
-        // return res.send("succesful purchase - inserted row");
       }
 
       // update db
