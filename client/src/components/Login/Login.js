@@ -1,9 +1,6 @@
-import React, { Fragment, useState, useEffect } from "react";
-import { Link, Redirect } from "react-router-dom";
+import React, { Fragment, useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
-
-import { toast } from "react-toastify";
 
 const Login = ({ setAuth }) => {
   const [inputs, setInputs] = useState({
@@ -34,10 +31,8 @@ const Login = ({ setAuth }) => {
         setAuth(true);
         history.push("/profile");
         window.location.reload();
-        toast.success("Logged in Successfully");
       } else {
         setAuth(false);
-        // toast.error(parseRes);
       }
     } catch (err) {
       console.error(err);
@@ -54,7 +49,6 @@ const Login = ({ setAuth }) => {
           value={email}
           placeholder="email"
           onChange={(e) => onChange(e)}
-          className="form-control my-3"
         />
         <input
           type="password"
@@ -62,9 +56,8 @@ const Login = ({ setAuth }) => {
           name="password"
           value={password}
           onChange={(e) => onChange(e)}
-          className="form-control my-3"
         />
-        <button className="btn btn-success btn-block">Submit</button>
+        <button>Submit</button>
       </form>
     </Fragment>
   );

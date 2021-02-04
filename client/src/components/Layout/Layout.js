@@ -1,6 +1,7 @@
 import React from "react";
 import Container from "@material-ui/core/Container";
 
+// layout component to give structure to pages
 const Layout = ({ children }) => {
   return (
     <Container

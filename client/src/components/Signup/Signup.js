@@ -1,6 +1,4 @@
 import React, { Fragment, useState } from "react";
-import { Link, Redirect } from "react-router-dom";
-import { toast } from "react-toastify";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 
@@ -33,11 +31,8 @@ const Signup = ({ setAuth }) => {
         setAuth(true);
         history.push("/profile");
         window.location.reload();
-
-        // toast.success("Register Successfully");
       } else {
         setAuth(false);
-        toast.error(token);
       }
     } catch (err) {
       console.error(err);
@@ -54,7 +49,6 @@ const Signup = ({ setAuth }) => {
           value={email}
           placeholder="email"
           onChange={(e) => onChange(e)}
-          className="form-control my-3"
         />
         <input
           type="password"
@@ -62,7 +56,6 @@ const Signup = ({ setAuth }) => {
           value={password}
           placeholder="password"
           onChange={(e) => onChange(e)}
-          className="form-control my-3"
         />
         <input
           type="text"
@@ -70,9 +63,8 @@ const Signup = ({ setAuth }) => {
           value={username}
           placeholder="username"
           onChange={(e) => onChange(e)}
-          className="form-control my-3"
         />
-        <button className="btn btn-success btn-block">Submit</button>
+        <button>Submit</button>
       </form>
     </Fragment>
   );
