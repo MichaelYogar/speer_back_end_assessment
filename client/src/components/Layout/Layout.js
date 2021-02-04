@@ -1,5 +1,4 @@
 import React from "react";
-import "./Layout.css";
 import Container from "@material-ui/core/Container";
 
 const Layout = ({ children }) => {
