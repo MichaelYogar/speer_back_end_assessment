@@ -7,7 +7,7 @@
 
 ## How to run
 
-In case set up takes too long, I've created a video demonstration: [video](https://www.youtube.com/watch?v=NDR2G3UnSOI&ab_channel=MichaelYogar)
+Video demo: [video](https://www.youtube.com/watch?v=NDR2G3UnSOI&ab_channel=MichaelYogar)
 
 1. Create a `.env` file inside the server folder of the project and add the following:
 
@@ -43,7 +43,7 @@ API_KEY=example
 - In the client side, the core business logic is in Profile.js
 - In the server side, the core business logic is in controllers/auth.js
 - Rest of files are for routing, user authentication/authorization using JSON Web Tokens, and setup
-- I am not familar with stocks, it may be reflected in variable names, etc. 
+- I am not familar with stocks, it may be reflected in variable names, etc
 - Feedback is always welcomed! Thank you for taking the time to review this
 
 ## Completed Features
