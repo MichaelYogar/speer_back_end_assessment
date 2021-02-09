@@ -1,5 +1,9 @@
+## Status
+
+- For dev branch, currently switching from node-pg to use sequelize. Main branch working.
+
 ## Stack
- 
+
 - React
 - Node.js
 - Express.js
@@ -31,10 +35,12 @@ API_KEY=example
 - refer to db/database.sql to see tables you need to create
 
 3. Running Client
+
 - `npm install`
 - `cd client` and `npm run start`
 
 4. Running Server
+
 - `npm install`
 - `cd server` and `npm run dev`
 
@@ -47,12 +53,20 @@ API_KEY=example
 - Feedback is always welcomed! Thank you for taking the time to review this
 
 ## Completed Features
+
 - Your system should have support for users to login/logout
 - Users should be able to add balance to their wallet
 - Users should be able to buy/sell shares (transactions need not be stored)
 - Users should have the ability to see their portfolio
 
 ## Proud Of Section
+
 - I completed this in about 15 hours, give or take. That being said, I am proud of the backend, and I learned a lot while making this.
 - Another website I am currently working on is: [where-to-work](https://www.where-to-work.com). It highlights my backend abilities as well.
 
+## Todo
+
+[] replace JWT with Google Oath2
+[] migrate to typescript
+[] try to get real time data - look into Rabbitmq
+[] redis caching to rate limit
