@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const app = express();
 const routes = require("./routes");
 const cors = require("cors");
+const db = require("./db");
 
 const port = 5000 || process.env.PORT;
 require("dotenv").config();
@@ -15,6 +16,8 @@ app.use(bodyParser.json());
 /* ---------- ROUTES ---------- */
 app.use(routes);
 
-app.listen(port, () => {
-  console.log(`App listening at http://localhost:${port}`);
-});
+db.sync()
+  .then(() => {
+    app.listen(port, console.log(`Server started on port ${port}`));
+  })
+  .catch((err) => console.log("Error: " + err));
