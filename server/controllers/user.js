@@ -2,20 +2,15 @@ const db = require("../db");
 require("dotenv").config();
 const User = require("../models/users");
 const Stocks = require("../models/stocks");
+const { sequelize } = require("../models/users");
 const alpha = require("alphavantage")({ key: process.env.API_KEY });
 
 module.exports = {
   purchaseStock: async (req, res) => {
-    const { user_email, company, numberOfStocks } = req.body;
-    console.log(user_email, company, numberOfStocks);
+    const { user_email, company, num_of_stocks } = req.body;
     let price;
 
     // get current balance
-    const resultUserBalance = await db.query(
-      "SELECT balance FROM users WHERE user_email = $1",
-      [user_email]
-    );
-
     const resultUser = await User.findAll({
       attributes: ["balance"],
       where: {
@@ -23,7 +18,7 @@ module.exports = {
       },
     });
 
-    const balance = resultUser[0].dataValues;
+    const { balance } = resultUser[0].dataValues;
 
     // get price of stock
     // need to use short forms that are listed on NASDAQ
@@ -39,34 +34,38 @@ module.exports = {
 
     // acutal price is the price of the stock * number of stocks to be purchased
     // check if there is enough money to buy the stock
-    if (balance >= price * numberOfStocks) {
-      const newBalance = balance - price * numberOfStocks;
+    if (balance >= price * num_of_stocks) {
+      const newBalance = balance - price * num_of_stocks;
 
       // update user balance
-      const updatedBalance = await db.query(
-        "UPDATE users SET balance = $1 WHERE user_email = $2",
-        [newBalance, user_email]
-      );
+      await User.update({ balance: newBalance }, { where: { user_email } });
 
-      // update stock count for user
-      const checkStock = await db.query(
-        "SELECT * FROM stock WHERE company = $1 AND user_email = $2 ",
-        [company, user_email]
-      );
+      // need to update stock count for user
+      const checkStock = await Stocks.findAll({
+        where: {
+          company,
+          user_email,
+        },
+      });
 
       // if there is check db if stock already exists
-      if (checkStock.rows.length >= 1) {
-        const updateStockNum = await db.query(
-          "UPDATE stock SET num_of_stocks = num_of_stocks + $1, price = $2 WHERE user_email = $3 AND company = $4",
-          [numberOfStocks, price, user_email, company]
+      if (checkStock.length >= 1) {
+        await Stocks.update(
+          {
+            num_of_stocks: sequelize.literal(
+              // using literal to update field
+              // current number of stocks + number of stocks to be purchased
+              `num_of_stocks + ${num_of_stocks}`
+            ),
+            // updates to the most current price bought
+            price,
+          },
+          { where: { user_email, company } }
         );
         return res.send("succesful purchase - updated stock total");
       } else {
         // if it doesnt exist, insert the row
-        let addedStock = await db.query(
-          "INSERT INTO stock (user_email, company, num_of_stocks, price) VALUES ($1, $2, $3, $4) RETURNING *",
-          [user_email, company, numberOfStocks, price]
-        );
+        await Stocks.create({ user_email, company, num_of_stocks, price });
 
         return res.send("succesful purchase - inserted row");
       }
@@ -198,7 +197,7 @@ module.exports = {
       res.json(arr);
       // res.send(arr);
     } catch (err) {
-      console.log(err);
+      return res.status(400).send("Error in fetching user info");
     }
   },
 };
