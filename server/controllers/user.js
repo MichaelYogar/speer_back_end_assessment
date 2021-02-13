@@ -16,7 +16,14 @@ module.exports = {
       [user_email]
     );
 
-    const balance = resultUserBalance.rows[0].balance;
+    const resultUser = await User.findAll({
+      attributes: ["balance"],
+      where: {
+        user_email: user_email,
+      },
+    });
+
+    const balance = resultUser[0].dataValues;
 
     // get price of stock
     // need to use short forms that are listed on NASDAQ
@@ -167,15 +174,16 @@ module.exports = {
 
     try {
       const resultUser = await User.findAll({
+        attributes: ["balance"],
         where: {
           user_email: user_email,
         },
       });
 
-      const resultUserObj = resultUser[0].dataValues;
+      const balance = resultUser[0].dataValues;
 
       // es6
-      arr.push({ balance: resultUserObj.balance });
+      arr.push(balance);
 
       const resultStocks = await Stocks.findAll({
         where: {
