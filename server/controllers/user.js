@@ -1,5 +1,7 @@
 const db = require("../db");
 require("dotenv").config();
+const User = require("../models/users");
+const Stocks = require("../models/stocks");
 const alpha = require("alphavantage")({ key: process.env.API_KEY });
 
 module.exports = {
@@ -161,27 +163,32 @@ module.exports = {
     const { user_email } = req.body;
     let arr = [];
     let i = 0;
+    console.log(user_email);
 
     try {
-      const balance = await db.query(
-        "SELECT balance FROM users WHERE user_email = $1",
-        [user_email]
-      );
+      const resultUser = await User.findAll({
+        where: {
+          user_email: user_email,
+        },
+      });
 
-      arr.push(balance.rows[0]);
+      const resultUserObj = resultUser[0].dataValues;
 
-      const stocks = await db.query(
-        "SELECT company, num_of_stocks, price FROM stock WHERE user_email = $1",
-        [user_email]
-      );
+      // es6
+      arr.push({ balance: resultUserObj.balance });
 
-      // need to add index for table on the client side
-      for (const row of stocks.rows) {
-        arr.push({ ...row, i });
-        i++;
+      const resultStocks = await Stocks.findAll({
+        where: {
+          user_email: user_email,
+        },
+      });
+
+      for (const row of resultStocks) {
+        arr.push(row);
       }
 
-      res.send(arr);
+      res.json(arr);
+      // res.send(arr);
     } catch (err) {
       console.log(err);
     }
