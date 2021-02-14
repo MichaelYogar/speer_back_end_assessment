@@ -1,14 +1,14 @@
 const bcrypt = require("bcrypt");
 const db = require("../db");
 const createJWT = require("../utils/createJWT");
-const User = require("../models/users");
+const Users = require("../models/users");
 
 module.exports = {
   register: async (req, res) => {
     const { email, username, password } = req.body;
 
     try {
-      const result = await User.findAll({
+      const result = await Users.findAll({
         where: {
           user_email: email,
         },
@@ -23,7 +23,7 @@ module.exports = {
       // set initial balance for new users to 0
       const initialBalance = 0;
 
-      const createdUser = await User.create({
+      const createdUser = await Users.create({
         user_name: username,
         user_email: email,
         user_password: bcryptPassword,
@@ -44,24 +44,28 @@ module.exports = {
     const { email, password } = req.body;
 
     try {
-      const user = await db.query("SELECT * FROM users WHERE user_email = $1", [
-        email,
-      ]);
+      const result = await Users.findAll({
+        where: {
+          user_email: email,
+        },
+      });
 
-      if (user.rows.length === 0) {
+      if (result.length === 0) {
         return res.status(401).json("Invalid Credential");
       }
+
+      const dataValues = result[0].dataValues;
 
       // check password
       const validPassword = await bcrypt.compare(
         password,
-        user.rows[0].user_password
+        dataValues.user_password
       );
 
       if (!validPassword) {
         return res.status(401).json("Invalid Credential");
       }
-      const jwtToken = createJWT(user.rows[0].user_id);
+      const jwtToken = createJWT(dataValues.user_id);
       return res.json({ jwtToken });
     } catch (err) {
       console.error(err.message);

@@ -4,7 +4,7 @@ const {
   sellStock,
   deposit,
   getUserInfo,
-} = require("../controllers/user");
+} = require("../controllers/users");
 const router = express.Router();
 
 router.post("/purchaseStock", purchaseStock);
