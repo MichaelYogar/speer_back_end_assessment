@@ -77,32 +77,23 @@ module.exports = {
     }
   },
   sellStock: async (req, res) => {
-    const { user_email, company, numberOfStocks } = req.body;
-    console.log(user_email, company, numberOfStocks);
+    const { user_email, company, num_of_stocks } = req.body;
     let price;
 
     // get current number of stocks
-    const checkStock = await db.query(
-      "SELECT * FROM stock WHERE company = $1 AND user_email = $2 ",
-      [company, user_email]
-    );
+    const checkStock = await Stocks.findAll({
+      attributes: ["num_of_stocks"],
+      where: { user_email, company },
+    });
 
     let stockCount = 0;
-    if (checkStock) {
-      stockCount = checkStock.rows[0].num_of_stocks;
+    if (checkStock.length > 0) {
+      stockCount = checkStock[0].num_of_stocks;
     }
 
     if (stockCount <= 0) {
-      res.status(400).send("Not enough shares to sell");
+      return res.status(400).send("Not enough shares to sell");
     }
-
-    // get current balance
-    const resultUserBalance = await db.query(
-      "SELECT balance FROM users WHERE user_email = $1",
-      [user_email]
-    );
-
-    const balance = resultUserBalance.rows[0].balance;
 
     // get price of stock
     // need to use short forms that are listed on NASDAQ
@@ -119,25 +110,45 @@ module.exports = {
     // acutal price is the price of the stock * number of stocks to be purchased
     // check if valid price is here
     if (price) {
-      const newBalance = balance + price * numberOfStocks;
+      // get current balance
+      const checkBalance = await Users.findAll({
+        attributes: ["balance"],
+        where: { user_email },
+      });
 
-      // update user balance
-      const updatedBalance = await db.query(
-        "UPDATE users SET balance = $1 WHERE user_email = $2",
-        [newBalance, user_email]
-      );
+      const balance = checkBalance[0].balance;
+      const newBalance = balance + price * num_of_stocks;
 
       // update stock count for user
-
       // if there is check db if stock already exists
       // in this case, stocks should already exist since they're selling existing stocks
       if (stockCount >= 1) {
+        // currently sequalize not supporting update more than 1 field with natural join
+        // refer to https://github.com/sequelize/sequelize/issues/3957
+
         // subtract current number of stocks with the amount you want to sell
-        const updateStockNum = await db.query(
-          "UPDATE stock SET num_of_stocks = num_of_stocks - $1, price = $2 WHERE user_email = $3 AND company = $4",
-          [numberOfStocks, price, user_email, company]
+        await Stocks.update(
+          {
+            num_of_stocks: sequelize.literal(
+              // using literal to update field
+              // current number of stocks + number of stocks to be purchased
+              `num_of_stocks - ${num_of_stocks}`
+            ),
+          },
+          { where: { user_email, company } }
         );
-        return res.send("succesful sale - updated stock total");
+
+        // and update user balance
+        await Users.update(
+          { balance: newBalance },
+          {
+            where: {
+              user_email,
+            },
+          }
+        );
+
+        return res.send("succesful sale - updated stock total and balance");
       } else {
         return res
           .status(400)
@@ -153,7 +164,7 @@ module.exports = {
   deposit: async (req, res) => {
     const { user_email, deposit } = req.body;
     try {
-      const newBalance = await Users.update(
+      await Users.update(
         {
           balance: sequelize.literal(
             // using literal to update field
